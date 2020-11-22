@@ -1,0 +1,5 @@
+com\ideap\service\MessageService.class
+com\ideap\service\impl\MessageServiceImpl.class
+com\ideap\service\impl\MessageServiceImpl$1.class
+com\ideap\controller\MessageController.class
+com\ideap\pojo\MailContent.class

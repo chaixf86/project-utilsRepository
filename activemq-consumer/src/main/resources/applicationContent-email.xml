@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd" >
+	
+	<context:component-scan base-package="com.ideap"></context:component-scan>
+	
+	<context:property-placeholder location="classpath:mail-config.properties" />
+	<bean id="sender" class="org.springframework.mail.javamail.JavaMailSenderImpl" >
+		<!-- 发件人信息 -->
+		<property name="host" value="smtp.163.com"></property>
+		<property name="username" value="${mail.username}" ></property>
+		<property name="password" value="${mail.password}"></property>
+		<property name="defaultEncoding" value="UTF-8"></property>
+		<property name="javaMailProperties">
+			<props>
+				<!-- 需要进行用户认证 -->
+				<prop key="mail.stmp.auth">true</prop>
+				<!-- 访问163服务器多长时间超时，单位毫秒 -->
+				<prop key="mail.stmp.timeout">30000</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<!-- 邮件正文，scope=prototype 每次都提供一个新的对象 -->
+	<bean id="mailMessage" class="org.springframework.mail.SimpleMailMessage" scope="prototype">
+		<property name="from" value="xuefeichai@163.com"></property>
+	</bean>
+	
+	<bean id="pool" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<!-- 初始容量，核心容量，最小线程数 -->
+		<property name="corePoolSize" value="4"></property>
+		<!-- 空闲时间，单位'秒' 超出自动回收 -->
+		<property name="keepAliveSeconds" value="60"></property>
+		<!-- 最大容量 -->
+		<property name="maxPoolSize" value="32"></property>
+		<!-- 认为队列容量 -->
+		<property name="queueCapacity" value="128"></property>
+	
+	</bean>
+	
+	<import resource="applicationContent-jms.xml"/>
+	
+</beans>

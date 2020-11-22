@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:amq="http://activemq.apache.org/schema/core"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd" >
+	
+	<!-- 需要创建一个连接工厂，连接ActiveMQ，ActiveMQConnectionFactory，需要依赖ActiveMQ提供的amq标签 -->
+	<!-- amq:connectionFactory 是bean标签的子标签，会在spring容器中创建一个bean对象
+		可以为对象命名。类似：<bean:id="" class="ActiveMQConnectionFactory"></bean> 
+	-->
+	<amq:connectionFactory id="amqConnectionFactory" brokerURL="tcp://192.168.0.100:61616"
+		userName="admin" password="admin" />
+		
+	<!-- spring管理JMS相关代码的时候，必须依赖jms标准库。spring-jms提供的标准库 -->
+	
+	<!-- 定义spring-JMS中的连接工厂对象
+		CachingConnectionFactory - spring框架提供的连接工厂对象，不能真正的访问MOM容器
+			类似一个工厂的代理对象，需要提供一个真实的工厂，实现MOM容器的连接访问。
+	 -->
+	<bean id="connectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="amqConnectionFactory"></property>	
+		<property name="sessionCacheSize" value="3"></property>
+	</bean>
+	
+	<!-- 注册监听器 -->
+	<!-- 开始注册监听
+		需要的参数有： 
+			acknowledge	-	消息确认机制
+			container-type	-	容器类型，默认为
+				DefaultContainerType(默认可以配多个)		SingleContainerType
+			destination-type - 目的地类型，使用队列作为目的地
+			connectionFactory - 连接工厂，spring-jms使用的连接工厂，必须是spring自动创建的
+			不能使用三方工具创建的工程，如：ActiveMQConnectionFactory。
+	 -->
+	<jms:listener-container acknowledge="auto" container-type="default"
+		destination-type="queue" connection-factory="connectionFactory">
+		<!-- 在监听器容器中注册某监听器对象。
+			destination - 设置目的地命名
+		 -->
+		 <jms:listener destination="test-spring" ref="myListener"/>
+	</jms:listener-container>	
+</beans>
